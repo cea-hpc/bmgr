@@ -1,0 +1,4 @@
+include confs/*.conf
+include confs/*.wsgi
+include confs/*.jinja
+include README

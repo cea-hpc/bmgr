@@ -1,0 +1,78 @@
+#!/bin/bash
+
+source /etc/bmgr.conf
+
+usage() {
+    printf 'usage: %s <deploy|undeploy|deploy_status|get_profile|get_script> nodeset\n' "${0##*/}" >&2
+    printf '       %s <set_profile> nodeset profile\n' "${0##*/}" >&2
+    printf '       %s <list_profiles> \n' "${0##*/}" >&2
+    printf '       %s <set_attr> profile attr value\n' "${0##*/}" >&2
+}
+
+case "$1" in
+    deploy)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -w $2 --worker=exec curl -s -XPUT -F 'bootmethod=deploy' http://${SERVER}/bmgr/api/v1.0/next_boot/%h
+      ;;
+    undeploy)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+
+      clush --remote=no -f $FANOUT -w $2 --worker=exec curl -s -XPUT -F 'bootmethod=normal' http://${SERVER}/bmgr/api/v1.0/next_boot/%h
+      ;;
+    deploy_status)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+
+      clush --remote=no -f $FANOUT -bw $2 --worker=exec curl -s  http://${SERVER}/bmgr/api/v1.0/next_boot/%h
+      ;;
+    list_profiles)
+      if [[ -n "$2" ]]; then
+         usage
+         exit 1
+      fi
+
+      curl -s  http://${SERVER}/bmgr/api/v1.0/profile
+      ;;
+    get_profile)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -bw $2 --worker=exec curl -s http://${SERVER}/bmgr/api/v1.0/host_profile/%h
+      ;;
+    get_script)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -bw $2 --worker=exec curl -s http://${SERVER}/bmgr/api/v1.0/scripts/%h
+      ;;
+    set_profile)
+      if [[ -z "$3" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -w $2 --worker=exec curl -s  -XPUT -F "profile=$3"  http://${SERVER}/bmgr/api/v1.0/host_profile/%h
+      ;;
+    set_attr)
+      if [[ -z "$4" ]]; then
+         usage
+         exit 1
+      fi
+      curl -s  -XPUT -F "$3=$4"  "http://${SERVER}/bmgr/api/v1.0/profile/$2"
+      ;;
+
+    *)
+        printf 'ERROR: invalid action\n' >&2
+        usage
+        exit 1
+        ;;
+esac

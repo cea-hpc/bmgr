@@ -1,0 +1,20 @@
+# Temporary quick and dirty setup steps
+
+$ mysql
+  > grant all privileges on bmgr.* to bmgr_user@'localhost' identified by 'bmgr_pass';
+  > create database bmgr;
+
+$ python
+  > from bmgr.server import init_db;
+  > init_db()
+
+$ echo 'WSGIScriptAlias /bmgr "/var/www/bmgr/bmgr.wsgi"' >> /etc/httpd/conf/httpd.conf
+
+$ systemctl restart httpd
+
+$ bmgrctrl set_attr profile1 attr1 value1
+
+$ bmgrctrl set_profile node[100-200] profile1
+
+$ bmgrctrl profile_list
+
