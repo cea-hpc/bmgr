@@ -1,4 +1,6 @@
-# Temporary quick and dirty setup steps
+# Quick setup steps
+
+Select a user/password and update /etc/bmgr/bmgr.conf
 
 $ mysql
   > grant all privileges on bmgr.* to bmgr_user@'localhost' identified by 'bmgr_pass';
@@ -12,9 +14,12 @@ $ echo 'WSGIScriptAlias /bmgr "/var/www/bmgr/bmgr.wsgi"' >> /etc/httpd/conf/http
 
 $ systemctl restart httpd
 
-$ bmgrctrl set_attr profile1 attr1 value1
+$ bmgr profile_setattr profile1 attr1 value1
 
-$ bmgrctrl set_profile node[100-200] profile1
+$ bmgr node_setprof node[100-200] profile1
 
-$ bmgrctrl profile_list
+$ bmgr profile_list
 
+$ bmgr node_show node100
+
+Configure templates in /etc/bmgr/templates

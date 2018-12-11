@@ -5,20 +5,36 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship, synonym
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import Column, Integer, String, ForeignKey
-import subprocess, tempfile, os, stat, flask, json, jinja2
+from logging.config import dictConfig
+
+import subprocess, tempfile, os, stat, flask, json, jinja2,sys
 import ClusterShell.NodeSet
 
-# grant all privileges on bmgr.* to bmgr_user@'%[hostname]' identified by 'XXXX'
-
-basedir = os.path.abspath(os.path.dirname(__file__))
-
+dictConfig({
+     'version': 1,
+     'formatters': {'default': {
+         'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+     }},
+     'handlers': {'wsgi': {
+         'class': 'logging.StreamHandler',
+         'formatter': 'default'
+     }},
+     'root': {
+         'level': 'DEBUG',
+         'handlers': ['wsgi']
+     }
+})
 
 app = Flask(__name__)
+CONF_PATH=os.environ.get('CONF_PATH', '/etc/bmgr')
+try:
+  exec(open(os.path.join(CONF_PATH, "bmgr.conf")).read())
+except IOError:
+  pass
 
-
-exec(open("/etc/bmgr.conf").read())
-
-SQLALCHEMY_DATABASE_URI = 'mysql://{0}:{1}@{2}/bmgr'.format(DB_USER, DB_PASS, DB_HOST)
+SQLALCHEMY_DATABASE_URI = 'mysql://{0}:{1}@{2}/bmgr'.format(os.environ.get('DB_USER', DB_USER),
+                                                            os.environ.get('DB_PASS', DB_PASS),
+                                                            os.environ.get('DB_HOST', DB_HOST))
 engine = create_engine(SQLALCHEMY_DATABASE_URI, convert_unicode=True, echo=True, pool_recycle=600)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=True,
@@ -47,7 +63,7 @@ class Profile(Base):
 
     def __init__(self, name, attributes={}):
         self.name = name
-        self.attributes = json.dumps(attributes)
+        self._attributes = json.dumps(attributes)
 
     def __repr__(self):
         return '<Profile %r>' % (self.name)
@@ -94,12 +110,12 @@ def get_profile(profile_name):
         p = Profile(profile_name)
         db_session.add(p)
         db_session.commit()
-
     return p
 
 def render(tpl, context):
     return jinja2.Environment(
-        loader=jinja2.FileSystemLoader('/var/www/bmgr')
+        loader=jinja2.FileSystemLoader(os.path.join(CONF_PATH,
+                                                     'templates'))
     ).get_template(tpl).render(context)
 
 @app.teardown_appcontext
@@ -123,7 +139,28 @@ def get_boot(hostname):
     except Exception as e:
         return make_response(str(e))
 
+@app.route('/api/v1.0/hosts/<string:hostname>', methods=['DELETE', 'GET'])
+def host(hostname):
+    try:
+      if request.method == 'DELETE':
+        h = get_host(hostname)
+        db_session.delete(h)
+        db_session.commit()
+        return make_response('ok\n')
+      else:
+        h = get_host(hostname)
+        s =  'next boot: {0}\n'.format(h.target)
+        s += 'profile: {0}\n'.format(h.profile.name)
+        try:
+          for attr, val in h.profile.attributes.iteritems():
+            s+= '  - {0}: {1}\n'.format(attr, val)
+        except:
+          pass
+        return make_response(s)
 
+    except Exception as e:
+        return make_response(str(e))
+      
 @app.route('/api/v1.0/host_profile/<string:hostname>', methods=['GET', 'PUT'])
 def host_profile(hostname):
     try:
@@ -142,23 +179,29 @@ def host_profile(hostname):
             except:
                 pass
             return make_response(s)
-
+    except NoResultFound:
+      return make_response('profile not found')
     except Exception as e:
         return make_response(str(e))
 
 
-@app.route('/api/v1.0/profile', methods=['GET'])
+@app.route('/api/v1.0/profiles', methods=['GET'])
 def list_profile():
     try:
         profiles = db_session.query(Profile).all()
-        s = ''.join(['{0}: {1}\n'.format(p.name, str(ClusterShell.NodeSet.fold(','.join([h.hostname
-                                                                                         for h in p.hosts])))) for p in profiles if p.hosts])
+        s = ''.join(
+            ['{0}: {1}\n'.format(
+                p.name,
+                str(ClusterShell.NodeSet.fold(
+                    ','.join([h.hostname for h in p.hosts])))
+            ) for p in profiles if p.hosts])
         return make_response(s)
     except Exception as e:
         return make_response(str(e))
 
-@app.route('/api/v1.0/profile/<string:profile_name>', methods=['GET', 'PUT'])
+@app.route('/api/v1.0/profiles/<string:profile_name>', methods=['DELETE', 'GET', 'PUT'])
 def profile(profile_name):
+    app.logger.error("hello")
     try:
         if request.method == 'PUT':
             p = get_profile(profile_name)
@@ -166,7 +209,7 @@ def profile(profile_name):
             attrs = p.attributes
             if not isinstance(attrs, dict):
                 attrs = {}
-
+            
             for attr, value in request.form.iteritems():
                 attrs[attr] = value
 
@@ -174,9 +217,15 @@ def profile(profile_name):
 
             db_session.commit()
             return make_response('ok\n')
+        elif request.method == 'DELETE':
+            p = get_profile(profile_name)
+            db_session.delete(p)
+            db_session.commit()
+            return make_response('ok\n')
         else:
             p = get_profile(profile_name)
-            return make_response(''.join(['{0}: {1}\n'.format(attr, val) for attr, val in p.attributes.iteritems()]))
+            return make_response(''.join(['{0}: {1}\n'.format(attr, val) for
+                                          attr, val in p.attributes.iteritems()]))
     except Exception as e:
         return make_response(str(e))
 
@@ -187,8 +236,15 @@ def next_boot(hostname):
         if request.method == 'PUT':
             h.target = request.form['bootmethod']
             db_session.commit()
-            return make_response('ok: next boot for {0} is {1} \n'.format(hostname, h.target))
+            return make_response('ok: next boot for {0} is {1} \n'.format(hostname,
+                                                                          h.target))
         else:
             return make_response('next boot is {0}\n'.format(h.target))
     except Exception as e:
         return make_response(str(e))
+
+
+if __name__ == "__main__":
+    if sys.argv[1] == 'initdb':
+       init_db()
+       

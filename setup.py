@@ -36,28 +36,27 @@ class bmgr_install(install):
         install.initialize_options(self)
 
     def finalize_options(self):
-        self.distribution.data_files.append((self.sysconfdir,
+        self.distribution.data_files.append((os.path.join(self.sysconfdir, 'bmgr'),
                                              ['confs/bmgr.conf']))
+        self.distribution.data_files.append((os.path.join(self.sysconfdir, 'bmgr/templates'),
+                                             ['confs/templates/normal.jinja',
+                                              'confs/templates/deploy.jinja']))
         self.distribution.data_files.append((self.pkgdocdir,
                                              ['README']))
         self.distribution.data_files.append((os.path.join(self.webdir, 'bmgr'),
                                              ['confs/bmgr.wsgi']))
-        self.distribution.data_files.append((os.path.join(self.webdir, 'bmgr'),
-                                             ['confs/normal.jinja',
-                                              'confs/deploy.jinja']))
-
         install.finalize_options(self)
 
-setup(name= 'bmgr', version= '0.1', description= 'Simple iPXE boot manager',
+setup(name= 'bmgr', version= '0.2', description= 'Simple iPXE boot manager',
       long_description= 'Simple tool to manage PXE boot requests with a RESTful'
       ' interface',
       author= 'Francois Diakhate', author_email= 'francois.diakhate@cea.fr',
       license= "GPLv3", package_dir={'': 'lib'},
       packages=['bmgr'],
-      scripts=['scripts/bmgrctrl'],
+      scripts=['scripts/bmgr'],
       data_files=[],
-      install_requires=['python-flask', 'python-etcd >= 0.4.3', 'python-flask-sqlalchemy',
-                        'MySQL-python'],
+      install_requires=['Flask', 'Flask-SQLAlchemy',
+                        'MySQL-python','ClusterShell'],
       cmdclass={'bdist_rpm': bmgr_bdist_rpm,
                 'install': bmgr_install}
 )

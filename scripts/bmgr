@@ -1,0 +1,95 @@
+#!/bin/bash
+
+CONF_PATH=${CONF_PATH:-/etc/bmgr}
+CONF_FILE="${CONF_PATH}/bmgr.conf"
+if [[ -f "${CONF_FILE}" ]]; then
+  source "${CONF_PATH}/bmgr.conf"
+fi
+FANOUT=${FANOUT:-128}
+SERVER_HOST=${SERVER_HOST:-localhost:5432}
+
+usage() {
+    printf 'usage: %s <node_deploy|node_undeploy|node_show|node_script|node_list|node_delete> nodeset\n' "${0##*/}" >&2
+    printf '       %s <node_setprof> nodeset profile\n' "${0##*/}" >&2
+    printf '       %s <profile_list|profile_delete|profile_setattr|profile_show> \n' "${0##*/}" >&2
+    printf '       %s <profile_setattr> value\n' "${0##*/}" >&2
+}
+
+case "$1" in
+    node_deploy)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -w $2 --worker=exec curl -s -XPUT -F 'bootmethod=deploy' http://${SERVER_HOST}/bmgr/api/v1.0/next_boot/%h
+      ;;
+    node_delete)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -w $2 --worker=exec curl -s -XDELETE http://${SERVER_HOST}/bmgr/api/v1.0/hosts/%h
+      ;;
+    node_undeploy)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -w $2 --worker=exec curl -s -XPUT -F 'bootmethod=normal' http://${SERVER_HOST}/bmgr/api/v1.0/next_boot/%h
+      ;;
+    node_show)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -bw $2 --worker=exec curl -s  http://${SERVER_HOST}/bmgr/api/v1.0/hosts/%h
+      ;;
+    profile_list|node_list)
+      if [[ -n "$2" ]]; then
+         usage
+         exit 1
+      fi
+      curl -s  http://${SERVER_HOST}/bmgr/api/v1.0/profiles
+      ;;
+    profile_show)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -bw $2 --worker=exec curl -s http://${SERVER_HOST}/bmgr/api/v1.0/host_profile/%h
+      ;;
+    node_script)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -bw $2 --worker=exec curl -s http://${SERVER_HOST}/bmgr/api/v1.0/scripts/%h
+      ;;
+    node_setprof)
+      if [[ -z "$3" ]]; then
+         usage
+         exit 1
+      fi
+      clush --remote=no -f $FANOUT -w $2 --worker=exec curl -s  -XPUT -F "profile=$3"  http://${SERVER_HOST}/bmgr/api/v1.0/host_profile/%h
+      ;;
+    profile_setattr)
+      if [[ -z "$4" ]]; then
+         usage
+         exit 1
+      fi
+      curl -s  -XPUT -F "$3=$4"  "http://${SERVER_HOST}/bmgr/api/v1.0/profiles/$2"
+      ;;
+    profile_delete)
+      if [[ -z "$2" ]]; then
+         usage
+         exit 1
+      fi
+      curl -s  -XDELETE "http://${SERVER_HOST}/bmgr/api/v1.0/profiles/$2"
+      ;;
+
+    *)
+        printf 'ERROR: invalid action\n' >&2
+        usage
+        exit 1
+        ;;
+esac
