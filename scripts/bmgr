@@ -52,11 +52,12 @@ case "$1" in
       curl -s  http://${SERVER_HOST}/bmgr/api/v1.0/profiles
       ;;
     profile_show)
+      ;;
       if [[ -z "$2" ]]; then
          usage
          exit 1
       fi
-      clush --remote=no -f $FANOUT -bw $2 --worker=exec curl -s http://${SERVER_HOST}/bmgr/api/v1.0/host_profile/%h
+      clush --remote=no -f $FANOUT -bw $2 --worker=exec curl -s "http://${SERVER_HOST}/bmgr/api/v1.0/profiles/$2"
       ;;
     node_script)
       if [[ -z "$2" ]]; then

@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 services:
   bmgr:
     build:
@@ -6,11 +6,12 @@ services:
     ports:
      - "5432:5432"
     environment:
-       DB_PASS: bmgrpass
-       DB_USER: bmgr
-       DB_HOST: db
+       BMGR_DB_PASS: bmgrpass
+       BMGR_DB_USER: bmgr
+       BMGR_DB_HOST: db
     volumes:
       - ./confs:/etc/bmgr
+      - .:/bmgr
     depends_on:
       - db
   db:
