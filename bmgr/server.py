@@ -79,6 +79,8 @@ class Host(db.Model):
   profiles = relationship("Profile", backref="host",
                        secondary=host_profiles_table, order_by=Profile.weight)
 
+  aliases = relationship("Alias", cascade="all, delete-orphan")
+
   def __init__(self, hostname):
     self.hostname = hostname
 
