@@ -51,13 +51,17 @@ setup(name= 'bmgr', version= '0.2', description= 'Simple iPXE boot manager',
       long_description= 'Simple tool to manage PXE boot requests with a RESTful'
       ' interface',
       author= 'Francois Diakhate', author_email= 'francois.diakhate@cea.fr',
-      license= "GPLv3",
-      packages=['bmgr'],
-      scripts=['scripts/bmgr'],
+      license= "GPLv3", package_dir={'bmgr': 'bmgr', 'bmgr.scripts': 'bmgr/scripts'},
+      packages=['bmgr','bmgr.scripts'],
       data_files=[],
+      entry_points= '''
+        [console_scripts]
+        bmgr=bmgr.scripts.cmd:cli
+      ''',
       install_requires=['Flask', 'flask', 'Flask-SQLAlchemy',
                         'MySQL-python','ClusterShell',
-                        'flask-expects-json'],
+                        'flask-expects-json', 'requests', 'click',
+                        'texttable'],
       cmdclass={'bdist_rpm': bmgr_bdist_rpm,
                 'install': bmgr_install}
 )
