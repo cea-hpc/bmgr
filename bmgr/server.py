@@ -447,11 +447,11 @@ def api_resources_post():
     'template_uri': {'type': 'string'},
   }
 })
-def api_resources_resource_patch():
+def api_resources_resource_patch(name):
   need_commit = False
   resource = get_resource(name)
 
-  if 'attributes' in g.data:
+  if 'template_uri' in g.data:
     resource.template_uri = g.data['template_uri']
     need_commit = True
 
@@ -461,7 +461,7 @@ def api_resources_resource_patch():
   return make_response(jsonify(resource.to_dict()), 200)
 
 @bp.route('/api/v1.0/resources/<string:name>', methods=['GET'])
-def api_resources_resource_get():
+def api_resources_resource_get(name):
   return jsonify(get_resource(name).to_dict())
 
 @bp.route('/api/v1.0/resources/<string:name>', methods=['DELETE'])
