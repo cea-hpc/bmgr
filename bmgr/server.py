@@ -1,9 +1,8 @@
-#!/bin/python
 from flask import (
   Flask, Blueprint, jsonify, make_response, abort, request, g, current_app
 )
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import joinedload, relationship, synonym
+from sqlalchemy.orm import joinedload, relationship, synonym, validates
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import UniqueConstraint, and_
@@ -61,6 +60,13 @@ class Profile(db.Model):
     profile = cls(d['name'], d['attributes'], d.get('weight', 0))
     return profile
 
+def parse_template_uri(uri):
+  m = re.match('file://(.*)', uri)
+  if m is None:
+    json_abort(400, 'Unable to parse template URI')
+
+  return m.group(1)
+
 class Host(db.Model):
   __tablename__ = 'hosts'
   id = db.Column(db.Integer, primary_key=True)
@@ -101,6 +107,11 @@ class Resource(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(255), unique=True)
   template_uri = db.Column(db.String(4096))
+
+  @validates('template_uri')
+  def validate_uri(self, key, template_uri):
+    parse_template_uri(template_uri)
+    return template_uri
 
   def __init__(self, name, template_uri):
     self.name = name
@@ -192,11 +203,7 @@ def get_alias(alias_name, hostname=None, allow_fail=False):
       abort(404)
 
 def render(tpl, context):
-  m = re.match('file://(.*)', tpl)
-  if m is None:
-    abort(500)
-
-  path = m.group(1)
+  path = parse_template_uri(tpl)
   return jinja2.Environment(loader = jinja2.FileSystemLoader(
       current_app.config['BMGR_TEMPLATE_PATH'])).get_template(path).render(
     context)
