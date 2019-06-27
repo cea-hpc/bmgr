@@ -358,6 +358,7 @@ def api_profiles_post():
     profile = Profile.from_dict(g.data)
     db.session.add(profile)
     db.session.commit()
+  #FIXME: discriminate errors
   except SQLAlchemyError:
     json_abort(409, "Profile already exists")
 
@@ -429,9 +430,13 @@ def api_resources_get():
   'required': ['name', 'template_uri']
 })
 def api_resources_post():
-  resource = Resource.from_dict(g.data)
-  db.session.add(resource)
-  db.session.commit()
+  try:
+    resource = Resource.from_dict(g.data)
+    db.session.add(resource)
+    db.session.commit()
+  #FIXME: discriminate errors
+  except SQLAlchemyError:
+    json_abort(409, "Resource already exists")
 
   return jsonify(resource.to_dict())
 
