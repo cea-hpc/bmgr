@@ -247,9 +247,11 @@ def query_aliases(alias_name=None, host_list=None, check_count=False):
 def get_hosts_folded(host_list=None):
   hosts = query_hosts(host_list)
   folded_list = []
-  for profiles, hosts in  itertools.groupby(hosts, lambda x: x.profiles):
+
+  for profiles, group in  itertools.groupby(sorted(hosts, key = lambda h: h.profiles),
+                                  lambda x: x.profiles):
     folded_list.append({
-        'name': str(nodeset.fromlist([h.hostname for h in hosts])),
+        'name': str(nodeset.fromlist([h.hostname for h in group])),
         'profiles': [ p.name for p in profiles ]})
 
   return folded_list
