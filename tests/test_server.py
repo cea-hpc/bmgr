@@ -268,6 +268,12 @@ def test_resources(client):
     for res in r.get_json():
         assert res['name'] in ('boot', 'deploy', 'kickstart')
 
+
+    # Check a single resource
+    r = client.get('/api/v1.0/resources/kickstart')
+    assert r.status_code == 200
+    assert r.get_json() == resource_def
+
     # Delete a resource
     r = client.delete('/api/v1.0/resources/kickstart')
     assert r.status_code == 204
