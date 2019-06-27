@@ -57,7 +57,7 @@ class Profile(db.Model):
 
   @classmethod
   def from_dict(cls, d):
-    profile = cls(d['name'], d['attributes'], d.get('weight', 0))
+    profile = cls(d['name'], d.get('attributes', {}), d.get('weight', 0))
     return profile
 
 def json_abort(status, error):
@@ -347,7 +347,7 @@ def api_hosts_hostname_get(hostname):
     'attributes': {'type': 'object'},
     'weight': {'type': 'integer'},
   },
-  'required': ['name', 'attributes']
+  'required': ['name']
 })
 def api_profiles_post():
   try:

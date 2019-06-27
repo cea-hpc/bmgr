@@ -131,11 +131,6 @@ def test_profiles(client):
 
         assert r.status_code == 409
 
-    # Malformed request (no attributes)
-    r = client.post('/api/v1.0/profiles',
-                    json = {"name": "C"})
-    assert r.status_code == 400
-
     # List profiles attributes
     for p in profiles:
         r = client.get('/api/v1.0/profiles/{}'.format(p['name']))
