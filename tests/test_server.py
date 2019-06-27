@@ -83,7 +83,7 @@ def test_hosts(client):
     # Delete non existing host
     r = client.delete('/api/v1.0/hosts/aaa')
     assert r.status_code == 404
-    assert r.get_json() == {'error': 'Not found'}
+    assert r.get_json() == {'error': 'Host not found'}
 
 
     # Delete our hosts
@@ -94,7 +94,7 @@ def test_hosts(client):
         # Delete a second time and get a not found error
         r = client.delete('/api/v1.0/hosts/{}'.format(host))
         assert r.status_code == 404
-        assert r.get_json() == {'error': 'Not found'}
+        assert r.get_json() == {'error': 'Host not found'}
 
     assert_empty_hosts(client)
 
@@ -170,9 +170,9 @@ def test_profiles(client):
         assert r.status_code == 204
 
         # Delete a second time and get a not found error
-        r = client.delete('/api/v1.0/profiles/{}'.format(p))
+        r = client.delete('/api/v1.0/profiles/{}'.format(p['name']))
         assert r.status_code == 404
-        assert r.get_json() == {'error': 'Not found'}
+        assert r.get_json() == {'error': "Profile '{}' not found".format(p['name'])}
 
 def test_host_profiles(client):
     # Create some profiles

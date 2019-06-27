@@ -60,6 +60,10 @@ class Profile(db.Model):
     profile = cls(d['name'], d['attributes'], d.get('weight', 0))
     return profile
 
+def json_abort(status, error):
+  abort(make_response(jsonify(error=error), status))
+
+
 def parse_template_uri(uri):
   m = re.match('file://(.*)', uri)
   if m is None:
@@ -175,7 +179,7 @@ def get_profile(profile_name):
   try:
     p = db.session.query(Profile).filter_by(name=profile_name).one()
   except NoResultFound:
-    abort(404)
+    json_abort(404, "Profile '{}' not found".format(profile_name))
 
   return p
 
@@ -183,7 +187,7 @@ def get_resource(resource_name):
   try:
     r = db.session.query(Resource).filter_by(name=resource_name).one()
   except NoResultFound:
-    abort(404)
+    json_abort(404, "Resource '{}' not found".format(resource_name))
 
   return r
 
@@ -200,7 +204,7 @@ def get_alias(alias_name, hostname=None, allow_fail=False):
     if allow_fail:
       return None
     else:
-      abort(404)
+      json_abort(404, "Alias '{}' not found".format(alias_name))
 
 def render(tpl, context):
   path = parse_template_uri(tpl)
@@ -218,7 +222,7 @@ def query_hosts(host_list=None, check_count=False):
   if host_list is not None:
       hosts = hosts.filter(Host.hostname.in_(host_list))
       if check_count and hosts.count() != len(host_list):
-        abort(404)
+        json_abort(404, "Host not found")
 
   return hosts
 
@@ -234,7 +238,7 @@ def query_aliases(alias_name=None, host_list=None, check_count=False):
 
   if alias_name and host_list and check_count:
       if aliases.count() != len(host_list):
-        abort(404)
+        json_abort(404, "Alias or override not found")
 
   return aliases
 
@@ -259,7 +263,7 @@ def get_host(hostname):
   try:
     return query_hosts([hostname]).one()
   except NoResultFound:
-    abort(404)
+    json_abort(404, "Host '{}' not found".format(hostname))
 
 @bp.route('/api/v1.0/hosts', methods=['POST'])
 @expects_json({
@@ -276,7 +280,8 @@ def api_hosts_post():
   try:
     host_list = nodeset(g.data['name'])
     if len(host_list) > MAX_NODESET:
-      abort(413)
+      json_abort(413, "Nodeset too large")
+
     for i, host in enumerate(host_list):
       single_host = g.data
       single_host['name'] = host
@@ -288,7 +293,7 @@ def api_hosts_post():
     db.session.commit()
   except SQLAlchemyError:
     # FIXME: Discriminate errors
-    abort(409)
+    json_abort(409, "Host already exists")
 
   folded_hosts = get_hosts_folded(host_list)
   return jsonify(folded_hosts)
@@ -350,7 +355,7 @@ def api_profiles_post():
     db.session.add(profile)
     db.session.commit()
   except SQLAlchemyError:
-    abort(409)
+    json_abort(409, "Profile already exists")
 
   return jsonify(profile.to_dict())
 
@@ -488,8 +493,7 @@ def api_resources_resource_render(name, hostname):
 def api_aliases_post():
   exists = query_aliases(g.data['name'])
   if query_aliases(g.data['name']).count() > 0:
-    abort(409)
-
+    json_abort(409, "Alias already exists")
 
   target = get_resource(g.data['target'])
   a = Alias(g.data['name'], target, None)
@@ -517,7 +521,7 @@ def api_aliases_alias_post(name):
   main_alias = get_alias(name)
 
   if query_aliases(name, nodeset(g.data['hosts'])).count() > 0:
-    abort(409)
+    json_abort(409, "Alias or override already exists")
 
   target = get_resource(g.data['target'])
   for i,host in enumerate(query_hosts(nodeset(g.data['hosts']),
