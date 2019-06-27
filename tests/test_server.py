@@ -424,7 +424,7 @@ def test_aliases(client):
     r = client.get('/api/v1.0/resources/boot/node0')
     assert r.status_code == 200
     expect_boot = r.data
-    
+
     r = client.get('/api/v1.0/resources/myalias/node0')
     assert r.status_code == 200
     assert r.data == expect_boot
@@ -468,4 +468,3 @@ def test_aliases(client):
     assert r.status_code == 204
     r = client.delete('/api/v1.0/aliases/myalias2')
     assert r.status_code == 204
-    

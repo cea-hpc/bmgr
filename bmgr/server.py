@@ -481,7 +481,7 @@ def api_resources_resource_render(name, hostname):
     resource = a.target
   else:
     resource = get_resource(name)
-    
+
   if a and a.autodelete:
     db.session.delete(a)
     db.session.commit()
@@ -611,47 +611,6 @@ def api_aliases_alias_host_get(name):
     r[a.name][a.hostname] = {'target': a.target,
                              'autodelete': a.autodelete}
   return jsonify(r)
-
-
-
-
-
-
-
-
-# @bp.route('/api/v1.0/scripts/<string:hostname>', methods=['GET'])
-# def get_boot(hostname):
-#   try:
-#     h = get_host(hostname)
-#     if h.target == 'deploy':
-#       h.target = 'normal'
-#       db.session.commit()
-#       return make_response(render('deploy.jinja', h.profile.attributes))
-#     else:
-#       if h.target != 'normal':
-#         h.target = 'normal'
-#         db.session.commit()
-#         return make_response(render("normal.jinja".format(h.target), h.profile.attributes))
-
-#   except Exception as e:
-#     return make_response(str(e))
-
-
-
-# @bp.route('/api/v1.0/next_boot/<string:hostname>', methods=['GET','PUT'])
-# def next_boot(hostname):
-#   try:
-#     h = get_host(hostname)
-#     if request.method == 'PUT':
-#       h.target = request.form['bootmethod']
-#       db.session.commit()
-#       return make_response('ok: next boot for {0} is {1} \n'.format(hostname,
-#                                                                     h.target))
-#     else:
-#       return make_response('next boot is {0}\n'.format(h.target))
-#   except Exception as e:
-#     return make_response(str(e))
-
 
 if __name__ == "__main__":
   if sys.argv[1] == 'initdb':
