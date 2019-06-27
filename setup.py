@@ -46,7 +46,7 @@ class bmgr_install(install):
                                              ['confs/bmgr.wsgi']))
         install.finalize_options(self)
 
-setup(name= 'bmgr', version= '0.2', description= 'Simple iPXE boot manager',
+setup(name= 'bmgr', version= '0.4', description= 'Simple iPXE boot manager',
       long_description= 'Simple tool to manage PXE boot requests with a RESTful'
       ' interface',
       author= 'Francois Diakhate', author_email= 'francois.diakhate@cea.fr',
