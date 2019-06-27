@@ -567,7 +567,7 @@ def api_aliases_alias_host_delete(name, hostname):
   db.session.commit()
   return make_response(jsonify({}), 204)
 
-def alias_to_dict(name=None):
+def alias_to_dict(name=None, merge=True):
   r = {}
   for a in query_aliases(name).all():
     r.setdefault(a.name, {'name': a.name,
@@ -578,6 +578,21 @@ def alias_to_dict(name=None):
     else:
       r[a.name]['target'] = a.target.name
 
+  if merge:
+    merged_res = {}
+    for a in r.keys():
+      merged_overrides = {}
+      overrides = r[a]['overrides']
+      for status, group in  itertools.groupby(sorted(overrides.items(),
+                                                     key=lambda x: x[1]),
+                                              lambda x: x[1]):
+
+        merged_overrides[str(nodeset.fromlist([h[0] for h in group]))] = status
+
+      merged_res[a] = { 'name': a,
+                        'target': r[a]['target'],
+                        'overrides':  merged_overrides }
+    r = merged_res
   return r
 
 @bp.route('/api/v1.0/aliases', methods=['GET'])

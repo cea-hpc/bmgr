@@ -375,9 +375,7 @@ def test_aliases(client):
     assert r.status_code == 200
     assert r.get_json() == {'name': 'myalias',
                             'overrides':
-                            {'node1': {'autodelete': True, 'target': 'deploy'},
-                             'node2': {'autodelete': True, 'target': 'deploy'},
-                             'node3': {'autodelete': True, 'target': 'deploy'}},
+                            {'node[1-3]': {'autodelete': True, 'target': 'deploy'}},
                              'target': 'boot'}
 
     # Add a second alias
@@ -393,15 +391,13 @@ def test_aliases(client):
     assert sorted(r.get_json()) == sorted(
         [{'name': 'myalias',
           'overrides':
-          {'node1': {'autodelete': True, 'target': 'deploy'},
-           'node2': {'autodelete': True, 'target': 'deploy'},
-           'node3': {'autodelete': True, 'target': 'deploy'}},
+          {'node[1-3]': {'autodelete': True, 'target': 'deploy'}},
           'target': 'boot'},
          {'name': 'myalias2',
           'target': 'deploy',
           'overrides': {}}])
-    
-    
+
+
     # Delete overriden alias
     r = client.delete('/api/v1.0/aliases/myalias/node1')
     assert r.status_code == 204
@@ -410,8 +406,7 @@ def test_aliases(client):
     assert r.status_code == 200
     assert r.get_json() == {'name': 'myalias',
                             'overrides':
-                            {'node2': {'autodelete': True, 'target': 'deploy'},
-                             'node3': {'autodelete': True, 'target': 'deploy'}},
+                            {'node[2-3]': {'autodelete': True, 'target': 'deploy'}},
                             'target': 'boot'}
 
 
