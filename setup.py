@@ -39,8 +39,7 @@ class bmgr_install(install):
         self.distribution.data_files.append((os.path.join(self.sysconfdir, 'bmgr'),
                                              ['confs/bmgr.conf']))
         self.distribution.data_files.append((os.path.join(self.sysconfdir, 'bmgr/templates'),
-                                             ['confs/templates/normal.jinja',
-                                              'confs/templates/deploy.jinja']))
+                                             glob.glob('confs/templates/*.jinja')))
         self.distribution.data_files.append((self.pkgdocdir,
                                              ['README']))
         self.distribution.data_files.append((os.path.join(self.webdir, 'bmgr'),

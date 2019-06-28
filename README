@@ -1,19 +1,20 @@
-# Quick setup steps (apache server)
+# Quick setup steps (apache http server and mysql backend)
 
 # Select a user/password and update /etc/bmgr/bmgr.conf
 
+# Create the database
 $ mysql
   > grant all privileges on bmgr.* to bmgr_user@'localhost' identified by 'bmgr_pass';
   > create database bmgr;
 
 # Initialze the database
-
 $ FLASK_APP=bmgr flask initdb
 
 # Configure apache
-
 $ echo 'WSGIScriptAlias /bmgr "/var/www/bmgr/bmgr.wsgi"' >> /etc/httpd/conf/httpd.conf
-
 $ systemctl restart httpd
 
-# Setup bmgr templates in /etc/bmgr/templates
+# Try bmgr
+$ bmgr resource list
+
+# Edit resource templates in /etc/bmgr/templates

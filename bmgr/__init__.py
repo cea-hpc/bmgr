@@ -11,7 +11,7 @@ def create_app(test_config=None):
     # or the location specified in BMGR_CONF_FILE
     if test_config is None:
         app.config.from_envvar('BMGR_CONF_FILE', silent=True) or \
-            app.config.from_pyfile('/etc/bmgr.conf', silent=True)
+            app.config.from_pyfile('/etc/bmgr/bmgr.conf', silent=True)
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)

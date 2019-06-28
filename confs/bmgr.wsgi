@@ -1,2 +1,3 @@
-import sys
-from bmgr.server import app as application
+#!/usr/bin/python
+from bmgr import create_app
+application = create_app()
