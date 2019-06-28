@@ -602,15 +602,11 @@ def api_aliases_get():
 
 @bp.route('/api/v1.0/aliases/<string:name>', methods=['GET'])
 def api_aliases_alias_get(name):
-  return jsonify(alias_to_dict(name).values()[0])
-
-@bp.route('/api/v1.0/aliases/<string:name>/<string:hostname>', methods=['GET'])
-def api_aliases_alias_host_get(name):
-  r = {}
-  for a in query_aliases(name, nodeset(hostname), check_count=True).all():
-    r[a.name][a.hostname] = {'target': a.target,
-                             'autodelete': a.autodelete}
-  return jsonify(r)
+  alias = alias_to_dict(name).values()
+  if alias:
+    return jsonify(alias[0])
+  else:
+    json_abort(404, "Alias not found")
 
 if __name__ == "__main__":
   if sys.argv[1] == 'initdb':

@@ -355,6 +355,18 @@ def test_aliases(client):
                           'target': 'boot'})
     assert r.status_code == 200
 
+
+    # Get  alias
+    r = client.get('/api/v1.0/aliases/myalias')
+    assert r.status_code == 200
+    assert r.get_json() == {'name': 'myalias',
+                            'overrides': {},
+                            'target': 'boot'}
+
+    # Get bad alias
+    r = client.get('/api/v1.0/aliases/mybadalias')
+    assert r.status_code == 404
+
     # Override existing alias
     r = client.post('/api/v1.0/aliases/myalias',
                     json={'target': 'deploy',
@@ -393,7 +405,6 @@ def test_aliases(client):
     # Get all aliases
     r = client.get('/api/v1.0/aliases')
     assert r.status_code == 200
-    print r.get_json()
     assert sorted(r.get_json()) == sorted(
         [{'name': 'myalias',
           'overrides':
@@ -402,7 +413,6 @@ def test_aliases(client):
          {'name': 'myalias2',
           'target': 'deploy',
           'overrides': {}}])
-
 
     # Delete overriden alias
     r = client.delete('/api/v1.0/aliases/myalias/node1')
