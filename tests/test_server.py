@@ -248,12 +248,15 @@ def test_resources(client):
     # Check default resources
     r = client.get('/api/v1.0/resources')
     assert r.status_code == 200
-    assert len(r.get_json()) == 2
+    assert len(r.get_json()) == 4
     for res in r.get_json():
-        assert res['name'] in ('boot', 'deploy')
+        assert res['name'] in ('ipxe_normal_boot',
+                               'ipxe_deploy_boot',
+                               'kickstart',
+                               'poap_config')
 
     # Add a resource
-    resource_def = {'name': 'kickstart',
+    resource_def = {'name': 'new_kickstart',
                     'template_uri': 'file://kstemplate.jinja'}
 
     r = client.post('/api/v1.0/resources',
@@ -264,26 +267,33 @@ def test_resources(client):
     # Check resources
     r = client.get('/api/v1.0/resources')
     assert r.status_code == 200
-    assert len(r.get_json()) == 3
+    assert len(r.get_json()) == 5
     for res in r.get_json():
-        assert res['name'] in ('boot', 'deploy', 'kickstart')
+        assert res['name'] in ('ipxe_normal_boot',
+                               'ipxe_deploy_boot',
+                               'kickstart',
+                               'poap_config',
+                               'new_kickstart')
 
 
     # Check a single resource
-    r = client.get('/api/v1.0/resources/kickstart')
+    r = client.get('/api/v1.0/resources/new_kickstart')
     assert r.status_code == 200
     assert r.get_json() == resource_def
 
     # Delete a resource
-    r = client.delete('/api/v1.0/resources/kickstart')
+    r = client.delete('/api/v1.0/resources/new_kickstart')
     assert r.status_code == 204
 
     # Check resources
     r = client.get('/api/v1.0/resources')
     assert r.status_code == 200
-    assert len(r.get_json()) == 2
+    assert len(r.get_json()) == 4
     for res in r.get_json():
-        assert res['name'] in ('boot', 'deploy')
+        assert res['name'] in ('ipxe_normal_boot',
+                               'ipxe_deploy_boot',
+                               'kickstart',
+                               'poap_config')
 
     # Create some profiles
     profiles = [ {"name": "profileA",
@@ -307,6 +317,14 @@ def test_resources(client):
     assert r.status_code == 200
 
     # Render a resource
+    r = client.post('/api/v1.0/resources',
+                    json = {'name': 'boot',
+                    'template_uri': 'file://boot.jinja'})
+
+    r = client.post('/api/v1.0/resources',
+                    json = {'name': 'deploy',
+                    'template_uri': 'file://deploy.jinja'})
+
     r = client.get('/api/v1.0/resources/boot/node0')
     assert r.status_code == 200
     assert r.data == 'boot: a: 1 b: 1'
@@ -333,7 +351,12 @@ def test_aliases(client):
     # Check default aliases
     r = client.get('/api/v1.0/aliases')
     assert r.status_code == 200
-    assert r.get_json() == []
+    assert r.get_json() == [{'name': 'ipxe_boot',
+                             'overrides': {},
+                             'target': 'ipxe_normal_boot'}]
+
+    r = client.delete('/api/v1.0/aliases/ipxe_boot')
+    assert r.status_code == 204
 
     # Create some test hosts
     r = client.post('/api/v1.0/hosts',
@@ -350,6 +373,15 @@ def test_aliases(client):
     assert r.status_code == 404
 
     # Add correct alias
+
+    r = client.post('/api/v1.0/resources',
+                    json = {'name': 'boot',
+                    'template_uri': 'file://boot.jinja'})
+
+    r = client.post('/api/v1.0/resources',
+                    json = {'name': 'deploy',
+                    'template_uri': 'file://deploy.jinja'})
+
     r = client.post('/api/v1.0/aliases',
                     json={'name': 'myalias',
                           'target': 'boot'})

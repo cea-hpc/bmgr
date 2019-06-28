@@ -1,0 +1,102 @@
+#
+# Mininmal RHEL 7 kickstart
+#
+# System authorization information
+auth --enableshadow --passalgo=sha512
+text
+
+logging --level=debug
+
+# Network
+network --device={{netdev}} --bootproto=dhcp
+
+# Run the Setup Agent on first boot
+install
+
+# Reboot after installation
+reboot
+
+# Use liveimg and repos
+url --url="{{ install_tree }}"
+
+firstboot --disable
+
+# Keyboard layouts
+keyboard --vckeymap=fr --xlayouts='fr (oss)'
+
+# System language
+lang en_US.UTF-8
+
+# Root password
+rootpw --plaintext {{ ks_rootpwd }}
+
+# System timezone
+timezone Europe/Paris --isUtc
+
+# System bootloader configuration
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={{ ks_drive }}
+zerombr
+
+# Partition clearing information
+{% if ks_erase_all_drives is defined and ks_erase_all_drives == "yes_do_it" %}
+clearpart --all --initlabel
+{% else %}
+clearpart --drives={{ks_drive}} --all --initlabel
+{% endif %}
+
+# Disk partitioning information
+part /boot --fstype="xfs" --ondisk={{ks_drive}} --size=2048
+part pv.system --fstype="lvmpv" --ondisk={{ks_drive}} --size=1 --grow
+
+# LVM
+volgroup system --pesize=4096 pv.system
+logvol /  --fstype="xfs" --percent=50 --name=root --vgname=system
+logvol /var  --fstype="xfs" --percent=40 --grow --name=var --vgname=system
+
+# SELinux configuration
+selinux --{{ ks_selinux_mode }}
+firewall --{{ ks_firewall_mode }}
+
+# Do not configure the X Window System
+skipx
+
+{% for repo in ks_repos.split(',') %}
+repo --name=KS_{{ loop.index }} --baseurl={{ repo }} --install
+{% endfor %}
+
+%packages --nocore
+@core --nodefaults
+bridge-utils
+lsof
+minicom
+strace
+tcpdump
+vim
+emacs-nox
+wget
+bind-utils
+crash
+yum-utils
+{{ ks_extra_pkg }}
+-redhat-support*
+-NetworkManager*
+-subscription-manager
+-plymouth*
+%end
+
+%post
+
+mkdir -p /root/.ssh/
+wget {{ ks_authorized_keys_url }} -P /root/.ssh/
+chmod -R o-rwx,g-rwx /root/.ssh
+yum-config-manager --save --disable base extras updates
+rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7*
+yum-config-manager --setopt gpgcheck=0 --save
+
+{% if ks_tmp_size %}
+echo 'none /tmp tmpfs default,auto,size={{ks_tmp_size}} 0 0' >> /etc/fstab
+{% else %}
+echo 'none /tmp tmpfs default,auto,size=5G 0 0' >> /etc/fstab
+{% endif %}
+%end
+

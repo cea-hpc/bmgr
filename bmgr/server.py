@@ -170,10 +170,17 @@ def conflict(error):
 
 def init_db():
   db.create_all()
-  db.session.add(Resource('boot',
-                          'file://boot.jinja'))
-  db.session.add(Resource('deploy',
-                          'file://deploy.jinja'))
+
+  normal_boot = Resource('ipxe_normal_boot', 'file://disk_boot.ipxe.jinja')
+  deploy_boot = Resource('ipxe_deploy_boot', 'file://deploy_boot.ipxe.jinja')
+  boot_alias = Alias('ipxe_boot', normal_boot, None)
+  kickstart = Resource('kickstart', 'file://ks_rhel7.jinja')
+  poap = Resource('poap_config', 'file://poap_config.jinja')
+  db.session.add(normal_boot)
+  db.session.add(deploy_boot)
+  db.session.add(boot_alias)
+  db.session.add(kickstart)
+  db.session.add(poap)
   db.session.commit()
 
 
