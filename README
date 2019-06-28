@@ -8,7 +8,7 @@ $ mysql
   > create database bmgr;
 
 # Initialze the database
-$ FLASK_APP=bmgr flask initdb
+$ FLASK_APP=bmgr.app flask initdb
 
 # Configure apache
 $ echo 'WSGIScriptAlias /bmgr "/var/www/bmgr/bmgr.wsgi"' >> /etc/httpd/conf/httpd.conf
