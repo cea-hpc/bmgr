@@ -494,7 +494,14 @@ def api_resources_resource_render(name, hostname):
     db.session.commit()
 
   host = get_host(hostname)
-  return make_response(render(resource.template_uri, host.attributes))
+
+  try:
+    return make_response(render(resource.template_uri, host.attributes))
+  except jinja2.exceptions.TemplateNotFound as e:
+    json_abort(400, 'Template not found on server: ' + str(e))
+  except jinja2.exceptions.TemplateError as e:
+    json_abort(400, 'Error while rendering template: ' + str(e))
+
 
 @bp.route('/api/v1.0/aliases', methods=['POST'])
 @expects_json({

@@ -30,6 +30,9 @@ def client():
         f.write('boot: a: {{ a }} b: {{ b }}')
     with open(os.path.join(template_path, 'deploy.jinja'), 'w+') as f:
         f.write('deploy: a: {{ a }} b: {{ b }}')
+    with open(os.path.join(template_path, 'defined.jinja'), 'w+') as f:
+        f.write('{{ c + 2 }}')
+
 
     yield client
 
@@ -346,6 +349,27 @@ def test_resources(client):
     r = client.get('/api/v1.0/resources/boot/node0')
     assert r.status_code == 200
     assert r.data == 'boot: a: 1 b: 2'
+
+    # Remove profiles and test undefined variables
+    r = client.patch('/api/v1.0/resources/boot',
+                    json = {'name': 'boot',
+                    'template_uri': 'file://defined.jinja'})
+    assert r.status_code == 200
+
+    r = client.get('/api/v1.0/resources/boot/node0')
+    assert r.status_code == 400
+    assert 'undefined' in r.get_json()['error']
+
+
+    # Render a bad profile
+    r = client.patch('/api/v1.0/resources/boot',
+                    json = {'name': 'boot',
+                    'template_uri': 'file://bad.jinja'})
+
+    r = client.get('/api/v1.0/resources/boot/node0')
+    assert r.status_code == 400
+    assert 'bad.jinja' in r.get_json()['error']
+
 
 def test_aliases(client):
     # Check default aliases
