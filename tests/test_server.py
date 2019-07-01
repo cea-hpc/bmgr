@@ -30,6 +30,8 @@ def client():
         f.write('boot: a: {{ a }} b: {{ b }}')
     with open(os.path.join(template_path, 'deploy.jinja'), 'w+') as f:
         f.write('deploy: a: {{ a }} b: {{ b }}')
+    with open(os.path.join(template_path, 'hostname.jinja'), 'w+') as f:
+        f.write('hostname: {{ hostname }}')
     with open(os.path.join(template_path, 'defined.jinja'), 'w+') as f:
         f.write('{{ c + 2 }}')
 
@@ -349,6 +351,17 @@ def test_resources(client):
     r = client.get('/api/v1.0/resources/boot/node0')
     assert r.status_code == 200
     assert r.data == 'boot: a: 1 b: 2'
+
+    # Render default attributes
+    r = client.post('/api/v1.0/resources',
+                    json = {'name': 'hostname',
+                    'template_uri': 'file://hostname.jinja'})
+    assert r.status_code == 200
+
+    r = client.get('/api/v1.0/resources/hostname/node0')
+    assert r.status_code == 200
+    assert r.data == 'hostname: node0'
+
 
     # Remove profiles and test undefined variables
     r = client.patch('/api/v1.0/resources/boot',

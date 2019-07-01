@@ -94,7 +94,7 @@ class Host(db.Model):
   @property
   def attributes(self):
     # TODO: We should look at deep merging
-    r = {}
+    r = {u'hostname': self.hostname}
     for p in self.profiles:
       r.update(p.attributes)
 
