@@ -261,7 +261,7 @@ def get_hosts_folded(host_list=None):
         'name': str(nodeset.fromlist([h.hostname for h in group])),
         'profiles': [ p.name for p in profiles ]})
 
-  return folded_list
+  return sorted(folded_list, key = lambda g: g['profiles'])
 
 def delete_hosts(host_list):
   db_hosts = query_hosts(host_list, check_count=True)
