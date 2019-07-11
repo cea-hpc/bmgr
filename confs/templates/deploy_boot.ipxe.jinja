@@ -3,7 +3,7 @@
 # You can refer to profile attributes with the jinja syntax
 :retry
 imgfree
-kernel --name vmlinuz {{ kernel }} initrd=initrd.img console={{ console }} rd.net.timeout.ifup=5 rd.net.timeout.carrier=3 {{kernel_params if kernel_params!=None}} {{"inst.stage2=" + install_tree if install_tree!=None}} {{"inst.ks=" + kickstart + hostname if kickstart!=None}} {{"ksdevice=" + netdev if kickstart!=None and netdev !=None }} {{"ip=" + netdev + ":dhcp" if netdev!=None}} || goto retry
+kernel --name vmlinuz {{ kernel }} initrd=initrd.img console={{ console }} inst.gpt rd.net.timeout.ifup=5 rd.net.timeout.carrier=3 {{kernel_params if kernel_params!=None}} {{"inst.stage2=" + install_tree if install_tree!=None}} {{"inst.ks=" + kickstart + hostname if kickstart!=None}} {{"ksdevice=" + netdev if kickstart!=None and netdev !=None }} {{"ip=" + netdev + ":dhcp" if netdev!=None}} || goto retry
 initrd --name initrd.img {{ initrd }} || goto retry
 imgstat
 boot || goto retry

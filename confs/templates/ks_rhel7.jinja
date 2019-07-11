@@ -33,18 +33,16 @@ rootpw --iscrypted {{ ks_rootpwd }}
 # System timezone
 timezone Europe/Paris --isUtc
 
-# System bootloader configuration
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={{ ks_drive }}
-zerombr
-
 # Partition clearing information
 {% if ks_erase_all_drives is defined and ks_erase_all_drives == "yes_do_it" %}
-clearpart --all --initlabel
+clearpart --all --initlabel --disklabel=gpt
 {% else %}
-clearpart --drives={{ks_drive}} --all --initlabel
+ignoredisk --only-use={{ks_drive}}
+clearpart --drives={{ks_drive}} --all --initlabel --disklabel=gpt
 {% endif %}
 
 # Disk partitioning information
+reqpart
 part /boot --fstype="xfs" --ondisk={{ks_drive}} --size=2048
 part pv.system --fstype="lvmpv" --ondisk={{ks_drive}} --size=1 --grow
 
@@ -52,6 +50,9 @@ part pv.system --fstype="lvmpv" --ondisk={{ks_drive}} --size=1 --grow
 volgroup system --pesize=4096 pv.system
 logvol /  --fstype="xfs" --percent=50 --name=root --vgname=system
 logvol /var  --fstype="xfs" --percent=40 --grow --name=var --vgname=system
+
+# System bootloader configuration
+bootloader --append=" crashkernel=auto" --boot-drive={{ ks_drive }}
 
 # SELinux configuration
 selinux --{{ ks_selinux_mode }}
