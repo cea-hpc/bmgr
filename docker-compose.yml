@@ -9,9 +9,10 @@ services:
        BMGR_DB_PASS: bmgrpass
        BMGR_DB_USER: bmgr
        BMGR_DB_HOST: db
-    volumes:
-      - ./confs:/etc/bmgr
-      - .:/bmgr
+# Uncomment to share sources with host
+#    volumes:
+#      - ./confs:/etc/bmgr
+#      - .:/bmgr
     depends_on:
       - db
   db:
