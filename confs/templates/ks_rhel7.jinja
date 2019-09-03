@@ -28,7 +28,7 @@ keyboard --vckeymap=fr --xlayouts='fr (oss)'
 lang en_US.UTF-8
 
 # Root password
-rootpw --plaintext {{ ks_rootpwd }}
+rootpw --iscrypted {{ ks_rootpwd }}
 
 # System timezone
 timezone Europe/Paris --isUtc
@@ -94,9 +94,9 @@ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7*
 yum-config-manager --setopt gpgcheck=0 --save
 
 {% if ks_tmp_size %}
-echo 'none /tmp tmpfs default,auto,size={{ks_tmp_size}} 0 0' >> /etc/fstab
+echo 'none /tmp tmpfs defaults,auto,size={{ks_tmp_size}} 0 0' >> /etc/fstab
 {% else %}
-echo 'none /tmp tmpfs default,auto,size=5G 0 0' >> /etc/fstab
+echo 'none /tmp tmpfs defaults,auto,size=5G 0 0' >> /etc/fstab
 {% endif %}
 %end
 
