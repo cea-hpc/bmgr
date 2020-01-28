@@ -2,6 +2,7 @@ import os
 import click
 import re
 import requests
+import sys
 
 from bmgr.client import Client
 from ClusterShell.NodeSet import NodeSet
@@ -98,6 +99,7 @@ def handle_exceptions():
             except ValidationError as e:
                 click.secho('ERROR - ' + str(e), fg='red', err=True)
 
+            sys.exit(1)
         wrapper.__doc__ = func.__doc__
         return wrapper
 
