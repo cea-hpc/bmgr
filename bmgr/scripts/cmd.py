@@ -1,4 +1,5 @@
 import os
+import subprocess
 import click
 import re
 import requests
@@ -8,6 +9,11 @@ from bmgr.client import Client
 from ClusterShell.NodeSet import NodeSet
 from texttable import Texttable
 
+try:
+    (output, _) = subprocess.Popen('stty size', shell=True, stdout=subprocess.PIPE).communicate()
+    COLUMNS = int(output.split()[1])
+except (OSError, IndexError):
+    COLUMNS = 80
 
 def parse_config(conf_path):
        try:
@@ -118,7 +124,7 @@ def host():
     pass
 
 def print_host_list(host_list):
-    table = Texttable()
+    table = Texttable(max_width=COLUMNS)
     table.set_deco(Texttable.HEADER | Texttable.HLINES)
     table.set_cols_dtype(['t', 't'])
     table.set_cols_align(["l", "l"])
@@ -212,7 +218,7 @@ weight (highest weight wins).
     pass
 
 def print_profile_list(profiles_list):
-    table = Texttable()
+    table = Texttable(max_width=COLUMNS)
     table.set_deco(Texttable.HEADER | Texttable.HLINES)
     table.set_cols_dtype(['t', 'i', 't'])
     table.set_cols_align(['l', 'l', 'l'])
@@ -309,7 +315,7 @@ each host inherits from its profiles.
 
 
 def print_resource_list(resources_list):
-    table = Texttable()
+    table = Texttable(max_width=COLUMNS)
     table.set_deco(Texttable.HEADER | Texttable.HLINES)
     table.set_cols_dtype(['t',  't'])
     table.set_cols_align(['l',  'l'])
@@ -416,7 +422,7 @@ Aliases can be rendered for each host at the same URL as normal resources:
 
 
 def print_alias_list(aliases_list):
-    table = Texttable()
+    table = Texttable(max_width=COLUMNS)
     table.set_deco(Texttable.HEADER | Texttable.HLINES)
     table.set_cols_dtype(['t',  't'])
     table.set_cols_align(['l',  'l'])
