@@ -57,10 +57,9 @@ setup(name= 'bmgr', version= '0.4', description= 'Simple iPXE boot manager',
         [console_scripts]
         bmgr=bmgr.scripts.cmd:cli
       ''',
-      install_requires=['Flask', 'flask', 'Flask-SQLAlchemy',
-                        'MySQL-python','ClusterShell',
-                        'flask-expects-json', 'requests', 'click',
-                        'texttable'],
+      install_requires=['Flask', 'flask', 'Flask-SQLAlchemy', 'ClusterShell',
+                        'flask-expects-json', 'requests', 'click', 'mysqlclient',
+                        'texttable', 'responses'],
       cmdclass={'bdist_rpm': bmgr_bdist_rpm,
                 'install': bmgr_install}
 )

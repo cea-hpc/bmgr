@@ -596,11 +596,14 @@ def alias_to_dict(name=None, merge=True):
     merged_res = {}
     for a in r.keys():
       merged_overrides = {}
-      overrides = r[a]['overrides']
-      for status, group in  itertools.groupby(sorted(overrides.items(),
-                                                     key=lambda x: x[1]),
-                                              lambda x: x[1]):
 
+      #Group hosts with the same overrides
+      sorted_overrides = sorted(r[a]['overrides'].items(),
+                                key=lambda x: (x[1]['target'],
+                                               x[1]['autodelete']))
+
+      for status, group in itertools.groupby(sorted_overrides,
+                                              lambda x: x[1]):
         merged_overrides[str(nodeset.fromlist([h[0] for h in group]))] = status
 
       merged_res[a] = { 'name': a,
@@ -612,11 +615,11 @@ def alias_to_dict(name=None, merge=True):
 @bp.route('/api/v1.0/aliases', methods=['GET'])
 def api_aliases_get():
   r = alias_to_dict()
-  return jsonify(r.values())
+  return jsonify(list(r.values()))
 
 @bp.route('/api/v1.0/aliases/<string:name>', methods=['GET'])
 def api_aliases_alias_get(name):
-  alias = alias_to_dict(name).values()
+  alias = list(alias_to_dict(name).values())
   if alias:
     return jsonify(alias[0])
   else:

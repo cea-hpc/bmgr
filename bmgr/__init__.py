@@ -34,7 +34,7 @@ def create_app(test_config=None):
                              "or URI")
 
     app.config.setdefault('BMGR_TEMPLATE_PATH', '/etc/bmgr/templates/')
-    app.config.setdefault('SQLALCHEMY_POOL_RECYCLE', 600)
+    app.config.setdefault('SQLALCHEMY_ENGINE_OPTIONS', {'pool_recycle' : 600})
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
     app.register_blueprint(server.bp)
 

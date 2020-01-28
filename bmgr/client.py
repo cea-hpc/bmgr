@@ -2,6 +2,8 @@ import requests
 
 class Client(object):
     def __init__(self, base_url):
+        if base_url.endswith('/'):
+            base_url = base_url[:-1]
         self._base_url = base_url
         self._s = requests.Session()
 

@@ -174,6 +174,9 @@ def test_profiles(client):
         assert r.status_code == 404
         assert r.get_json() == {'error': "Profile '{}' not found".format(p['name'])}
 
+def dict_sorted_list(l):
+    return sorted(l, key=lambda item: item.get('name'))
+
 def test_host_profiles(client):
     # Create some profiles
     profiles = [ {"name": "profileA",
@@ -226,7 +229,7 @@ def test_host_profiles(client):
     # Check new profiles
     r = client.get('/api/v1.0/hosts')
     assert r.status_code == 200
-    assert sorted(r.get_json()) == sorted([{
+    assert dict_sorted_list(r.get_json()) == dict_sorted_list([{
             'name': 'node[0-4]',
             'profiles': ['profileA', 'profileB']
         },{
@@ -241,7 +244,7 @@ def test_host_profiles(client):
     # Check new profiles
     r = client.get('/api/v1.0/hosts')
     assert r.status_code == 200
-    assert sorted(r.get_json()) == sorted([{
+    assert dict_sorted_list(r.get_json()) == dict_sorted_list([{
             'name': 'node[0-4]',
             'profiles': ['profileB']
         },{
@@ -332,7 +335,7 @@ def test_resources(client):
 
     r = client.get('/api/v1.0/resources/boot/node0')
     assert r.status_code == 200
-    assert r.data == 'boot: a: 1 b: 1'
+    assert r.get_data(as_text=True) == 'boot: a: 1 b: 1'
 
     # Add a second profile
     r = client.patch('/api/v1.0/hosts/node0',
@@ -341,7 +344,7 @@ def test_resources(client):
 
     r = client.get('/api/v1.0/resources/boot/node0')
     assert r.status_code == 200
-    assert r.data == 'boot: a: 1 b: 1'
+    assert r.get_data(as_text=True) == 'boot: a: 1 b: 1'
 
     # Raise the priority of the second profile
     r = client.patch('/api/v1.0/profiles/profileB',
@@ -350,7 +353,7 @@ def test_resources(client):
 
     r = client.get('/api/v1.0/resources/boot/node0')
     assert r.status_code == 200
-    assert r.data == 'boot: a: 1 b: 2'
+    assert r.get_data(as_text=True) == 'boot: a: 1 b: 2'
 
     # Render default attributes
     r = client.post('/api/v1.0/resources',
@@ -360,7 +363,7 @@ def test_resources(client):
 
     r = client.get('/api/v1.0/resources/hostname/node0')
     assert r.status_code == 200
-    assert r.data == 'hostname: node0'
+    assert r.get_data(as_text=True) == 'hostname: node0'
 
 
     # Remove profiles and test undefined variables
@@ -474,7 +477,7 @@ def test_aliases(client):
     # Get all aliases
     r = client.get('/api/v1.0/aliases')
     assert r.status_code == 200
-    assert sorted(r.get_json()) == sorted(
+    assert dict_sorted_list(r.get_json()) == dict_sorted_list(
         [{'name': 'myalias',
           'overrides':
           {'node[1-3]': {'autodelete': True, 'target': 'deploy'}},
@@ -497,25 +500,25 @@ def test_aliases(client):
 
     r = client.get('/api/v1.0/resources/deploy/node0')
     assert r.status_code == 200
-    expect_deploy = r.data
+    expect_deploy = r.get_data(as_text=True)
 
     # Get reference resource rendering
     r = client.get('/api/v1.0/resources/boot/node0')
     assert r.status_code == 200
-    expect_boot = r.data
+    expect_boot = r.get_data(as_text=True)
 
     r = client.get('/api/v1.0/resources/myalias/node0')
     assert r.status_code == 200
-    assert r.data == expect_boot
+    assert r.get_data(as_text=True) == expect_boot
 
     # Test dynamic alias
     r = client.get('/api/v1.0/resources/myalias/node2')
     assert r.status_code == 200
-    assert r.data == expect_deploy
+    assert r.get_data(as_text=True) == expect_deploy
 
     r = client.get('/api/v1.0/resources/myalias/node2')
     assert r.status_code == 200
-    assert r.data == expect_boot
+    assert r.get_data(as_text=True) == expect_boot
 
     # Test static alias
     r = client.post('/api/v1.0/aliases/myalias',
@@ -526,11 +529,11 @@ def test_aliases(client):
 
     r = client.get('/api/v1.0/resources/myalias/node2')
     assert r.status_code == 200
-    assert r.data == expect_deploy
+    assert r.get_data(as_text=True) == expect_deploy
 
     r = client.get('/api/v1.0/resources/myalias/node2')
     assert r.status_code == 200
-    assert r.data == expect_deploy
+    assert r.get_data(as_text=True) == expect_deploy
 
     # Delete overrides and aliases
     r = client.delete('/api/v1.0/aliases/myalias/node[2-3]')
