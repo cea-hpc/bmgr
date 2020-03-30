@@ -11,8 +11,9 @@ from texttable import Texttable
 
 def parse_config(conf_path):
        try:
-              exec(open(conf_path, 'r').read())
-              return BMGR_CLIENT_URL
+              ldict = {}
+              exec(open(conf_path, 'r').read(), globals(), ldict)
+              return ldict["BMGR_CLIENT_URL"]
        except:
               raise click.ClickException('Unable to parse configuration file')
 

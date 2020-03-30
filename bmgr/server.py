@@ -60,6 +60,9 @@ class Profile(db.Model):
     profile = cls(d['name'], d.get('attributes', {}), d.get('weight', 0))
     return profile
 
+  def __lt__(self, other):
+    return (- self.weight, self.name) < (- other.weight, other.name)
+
 def json_abort(status, error):
   abort(make_response(jsonify(error=error), status))
 
@@ -256,10 +259,10 @@ def get_hosts_folded(host_list=None):
   folded_list = []
 
   for profiles, group in  itertools.groupby(sorted(hosts, key = lambda h: h.profiles),
-                                  lambda x: x.profiles):
+                                            lambda x: x.profiles):
     folded_list.append({
         'name': str(nodeset.fromlist([h.hostname for h in group])),
-        'profiles': [ p.name for p in profiles ]})
+        'profiles': [p.name for p in sorted(profiles)]})
 
   return sorted(folded_list, key = lambda g: g['profiles'])
 
