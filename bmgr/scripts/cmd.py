@@ -161,7 +161,7 @@ def hosts_update(nodeset, profiles):
 
 Example usage:
 
-bmgr host update --profile profileX node[100-200]
+bmgr host update --profiles profileA,profileC node[100-200]
 
 """
     c = get_client()
