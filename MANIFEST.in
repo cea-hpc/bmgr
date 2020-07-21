@@ -1,4 +1,5 @@
 include confs/*.conf
 include confs/*.wsgi
 include confs/templates/*.jinja
-include README
+include README.md
+include docs/*.md
