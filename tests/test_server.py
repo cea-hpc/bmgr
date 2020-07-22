@@ -224,14 +224,14 @@ def test_host_profiles(client):
     assert r.status_code == 200
 
     assert r.get_json() == [{'name': 'node[0-4]',
-                             'profiles': ['profileA', 'profileB']}]
+                             'profiles': ['profileB', 'profileA']}]
 
     # Check new profiles
     r = client.get('/api/v1.0/hosts')
     assert r.status_code == 200
     assert dict_sorted_list(r.get_json()) == dict_sorted_list([{
             'name': 'node[0-4]',
-            'profiles': ['profileA', 'profileB']
+            'profiles': ['profileB', 'profileA']
         },{
             'name': 'node[5-9]',
             'profiles': ['profileA']
