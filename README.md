@@ -33,8 +33,10 @@ A typical usage is for deploy-mode vs. normal-boot mode :
 
 ```bash
 # mysql
-  > grant all privileges on bmgr.* to bmgr_user@'localhost' identified by 'bmgr_pass';
-  > create database bmgr;
+  > CREATE DATABASE bmgr;
+  > CREATE USER 'bmgr_user' IDENTIFIED BY 'bmgr_pass';
+  > GRANT ALL PRIVILEGES ON bmgr.* TO bmgr_user@'%';
+  > FLUSH PRIVILEGES;
 ```
 
 1. Initialze the database
