@@ -1,24 +1,34 @@
 # bmgr (Boot Manager)
 
-bmgr is a small piece of python code that includes a Flask-based HTTP backend and the related python client.
-It is intented to be used as a Kickstart/iPXE/Cloud-init script generator by using hierachical profile assigned
-to configured nodes.
+bmgr is intended to generate and serve configuration files or scripts
+used in the boot and deployment sequence of a server, such as
+Kickstart, iPXE or Cloud-init files. It can be seen as a subset of
+Cobbler focused on boot script generation. It is implemented as a
+small piece of python code providing a Flask-based HTTP backend and
+the related client. Its interface is based on nodesets which helps to
+manage large scale clusters.
 
-You can see this as a condensed version of cobbler, where only the script generator is present.
+Boot scripts are identified as *resources* within bmgr and are
+generated from Jinja templates. These templates are rendered
+dynamically each time a *host* requests a resource, according to the
+attributes that have been associated to the host.
 
-bmgr work by assigning hosts (identified by their hostnames) to multiple profiles.
-Each profile got a weight and arbitrary attributes.
-If an attribute exists in multiple profiles, the value of the attribute in the heaviest profile if used.
+To associate attributes to a host, you first have to define *profiles*
+which hold a collection of attributes and are given a weight. You can
+then associate hosts to one ore more profiles. If an attribute is
+defined multiple times, the value of the attribute in the heaviest
+profile is used.
 
-Scripts are generated using Jinja templates, identified as *resources* within bmgr.
-Resources as rendered per-host and uses the attributes available in host's profiles.
+It is also possible to define resource *aliases* which allow a resource
+to point to one template or the other depending on the situation.
 
-An additional concept of alias is also present in bmgr. A bmgr alias is simply a resource alias that can change automatically.
-You can define per-host 'oneshot' aliases that can route requests to a different template only once.
-A typical usage is for deploy-mode vs. normal-boot mode :
-- Add a 'boot' alias that points to the 'normal' resource by default
-- Add a second 'boot' ontshot alias for a single host that points to the 'deploy' resource.
-- As soon as the resource is rendered through the oneshot alias, the alias is deleted. ie. When the node is deployed, boot mode switch back to 'normal' mode.
+A typical usage is to switch between a normal boot from the server
+disk and a deployment boot to reinstall the server from the
+network. To achieve this, you can create a 'boot' alias that points to
+the 'normal' resource by default and make that alias point to the
+'deploy' resource when you want to redeploy your server. You can make
+that alias 'oneshot' so that the 'deploy' resource is only served once
+while subsequent requests return the 'normal' resource.
 
 
 ## Installation (Apache WSGI + MySQL backend)
