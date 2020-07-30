@@ -10,13 +10,15 @@ WORKDIR bmgr
 
 COPY . .
 
-RUN pip3 install --upgrade setuptools
+RUN pip3 install --upgrade setuptools pip
 
 RUN pip3 install pytest
 
 RUN pip3 install -r requirements.txt
 
-# RUN python setup.py bdist_rpm
+RUN mkdir /etc/bmgr
+
+RUN cp -r confs/templates /etc/bmgr/
 
 ENV FLASK_APP=bmgr
 ENV BMGR_CLIENT_URL=http://localhost:5000

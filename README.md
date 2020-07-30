@@ -31,6 +31,35 @@ that alias 'oneshot' so that the 'deploy' resource is only served once
 while subsequent requests return the 'normal' resource.
 
 
+## Quick evaluation of bmgr using Docker
+
+1. Deploy a http server and database with docker-compose
+
+From the repository root:
+
+```bash
+# docker-compose up -d
+```
+
+2. Join the bmgr container
+
+```bash
+# docker exec -ti bmgr_bmgr_1 /bin/bash
+```
+
+3. Initialize the datbase
+```bash
+# FLASK_APP=bmgr.app flask initdb
+```
+
+4. Try the CLI (see more CLI usage examples below)
+
+```bash
+$ bmgr resource list
+```
+
+5. Edit resource templates to your needs in `/etc/bmgr/templates`
+
 ## Installation (Apache WSGI + MySQL backend)
 
 1. Install the RPM
@@ -39,7 +68,7 @@ while subsequent requests return the 'normal' resource.
 # yum install bmgr
 ```
 
-1. Choose and configure database credentials
+2. Choose and configure database credentials
 
 ```bash
 # mysql
@@ -49,26 +78,19 @@ while subsequent requests return the 'normal' resource.
   > FLUSH PRIVILEGES;
 ```
 
-1. Initialze the database
+3. Initialize the database
 
 ```bash
 # FLASK_APP=bmgr.app flask initdb
 ```
 
-1. Configure apache
+4. Configure apache
 
 ```bash
 # echo 'WSGIScriptAlias /bmgr "/var/www/bmgr/bmgr.wsgi"' >> /etc/httpd/conf/httpd.conf
 # systemctl restart httpd
 ```
 
-1. Try it out
-
-```bash
-$ bmgr resource list
-```
-
-1. Edit resource template to your needs in `/etc/bmgr/templates`
 
 ## bmgr client usage examples
 ### Hosts
