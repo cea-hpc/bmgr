@@ -31,6 +31,8 @@ that alias 'oneshot' so that the 'deploy' resource is only served once
 while subsequent requests return the 'normal' resource.
 
 
+[Demo](docs/demo.gif)
+
 ## Quick evaluation of bmgr using Docker
 
 1. Deploy a http server and database with docker-compose
