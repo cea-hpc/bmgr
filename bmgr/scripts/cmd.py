@@ -261,6 +261,21 @@ bmgr profile add compute --attr attr1 val1 --attr attr2 val2
     c = get_client()
     c.add_profile(profile, validate_attrs(attr), weight)
 
+@profile.command(name='del', short_help='Delete profile')
+@click.argument('profile', nargs=1, type=str)
+@handle_exceptions()
+def profiles_del(profile):
+    """ Delete a profile
+
+Example usage:
+
+bmgr profile del profileA
+
+"""
+
+    c = get_client()
+    c.del_profile(profile)
+
 @profile.command(name='update', short_help='Update a profile')
 @click.option('-w', '--weight', help='profile weight', nargs=1, type=int)
 @click.option('-a', '--attr', multiple=True, nargs=2,
