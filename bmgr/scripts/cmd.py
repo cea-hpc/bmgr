@@ -160,7 +160,7 @@ bmgr host add --profiles profileA,profileB node[100-200]
 
 @host.command(name='update', short_help='Update hosts')
 @click.option('-p', '--profiles', help='coma separated list of profiles', default=None)
-@click.argument('nodeset', nargs=1, type=str)
+@click.argument('nodeset', nargs=1, type=NodeSet)
 @handle_exceptions()
 def hosts_update(nodeset, profiles):
     """ Update hosts
@@ -172,7 +172,7 @@ bmgr host update --profiles profileA,profileC node[100-200]
 """
     c = get_client()
 
-    c.update_hosts(nodeset, validate_profiles(profiles))
+    c.update_hosts(validate_hosts(nodeset), validate_profiles(profiles))
 
 @host.command(name='del', short_help='Delete hosts')
 @click.argument('nodeset', nargs=1, type=NodeSet)
@@ -417,6 +417,7 @@ Example usage:
 bmgr resource render ipxe_boot node100
 
 """
+    validate_hosts([host])
     c = get_client()
     click.echo(c.render_resource(resource, host))
 
