@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 class bmgr_bdist_rpm(bdist_rpm):
     user_options = bdist_rpm.user_options + [
-        ('macros=', None, 'Specfiy macros in RPM header')]
+        ('macros=', None, 'Specify macros in RPM header')]
 
     def initialize_options(self):
         bdist_rpm.initialize_options(self)
@@ -22,10 +22,10 @@ class bmgr_bdist_rpm(bdist_rpm):
 
 class bmgr_install(install):
     user_options = install.user_options + [
-        ('unitdir=', None, 'Specfiy folder to install systemd units'),
-        ('mandir=', None, 'Specfiy folder to install man pages'),
-        ('sysconfdir=', None, 'Specfiy folder to install configuration files'),
-        ('pkgdocdir=', None, 'Specfiy folder to install documentation files')]
+        ('unitdir=', None, 'Specify folder to install systemd units'),
+        ('mandir=', None, 'Specify folder to install man pages'),
+        ('sysconfdir=', None, 'Specify folder to install configuration files'),
+        ('pkgdocdir=', None, 'Specify folder to install documentation files')]
 
     def initialize_options(self):
         self.unitdir = None
@@ -48,7 +48,7 @@ class bmgr_install(install):
                                              ['confs/bmgr.wsgi']))
         install.finalize_options(self)
 
-setup(name= 'bmgr', version= '0.6', description= 'Simple iPXE boot manager',
+setup(name= 'bmgr', version= '0.6.1', description= 'Simple iPXE boot manager',
       long_description= 'Simple tool to manage PXE boot requests with a RESTful'
       ' interface',
       author= 'Francois Diakhate', author_email= 'francois.diakhate@cea.fr',
