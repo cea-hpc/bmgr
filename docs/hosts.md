@@ -18,11 +18,13 @@ Used to list registered hosts.
 [
     {
       "name": "host1",
-      "profiles": ["profileA", "profileB"]
+      "profiles": ["profileA", "profileB"],
+      "attributes": {"attributeA": 1, "attributeB": 2}
     },
     {
       "name": "host[2-3]",
-      "profiles": ["profileA", "profileC"]
+      "profiles": ["profileA", "profileC"],
+      "attributes": {"attributeA": 1, "attributeC": 3}
     }
 ]
 ```
@@ -47,7 +49,8 @@ Used to get a single host.
 [
     {
       "name": "host1",
-      "profiles": ["profileA", "profileB"]
+      "profiles": ["profileA", "profileB"],
+      "attributes": {"attributeA": 1, "attributeB": 2}
     }
 ]
 ```

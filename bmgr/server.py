@@ -90,16 +90,10 @@ class Host(db.Model):
   def __repr__(self):
     return '<Host %r>' % (self.hostname)
 
-  def to_dict(self):
-    return {'name': self.hostname,
-            'profiles': [ p.name for p in self.profiles ]}
-
   @property
   def attributes(self):
-    # TODO: We should look at deep merging
     r = {u'hostname': self.hostname}
-    for p in self.profiles:
-      r.update(p.attributes)
+    r.update(merge_profile_attributes(self.profiles))
 
     return r
 
@@ -110,6 +104,14 @@ class Host(db.Model):
       host.profiles = [ get_profile(p) for p in d['profiles'] ]
 
     return host
+
+def merge_profile_attributes(profiles):
+    # TODO: We should look at deep merging
+    r = {}
+    for p in profiles:
+      r.update(p.attributes)
+
+    return r
 
 class Resource(db.Model):
   __tablename__ = 'resources'
@@ -258,11 +260,12 @@ def get_hosts_folded(host_list=None):
   hosts = query_hosts(host_list)
   folded_list = []
 
-  for profiles, group in  itertools.groupby(sorted(hosts, key = lambda h: h.profiles),
-                                            lambda x: x.profiles):
+  for profiles, group in itertools.groupby(sorted(hosts, key = lambda h: h.profiles),
+                                           lambda x: x.profiles):
     folded_list.append({
         'name': str(nodeset.fromlist([h.hostname for h in group])),
-        'profiles': [p.name for p in sorted(profiles)]})
+        'profiles': [p.name for p in sorted(profiles)],
+        'attributes': merge_profile_attributes(profiles)})
 
   return sorted(folded_list, key = lambda g: g['profiles'])
 

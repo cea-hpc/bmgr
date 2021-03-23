@@ -66,7 +66,7 @@ def test_hosts(client):
                         json = { 'name': hosts }
                         )
         assert r.status_code == 200
-        assert r.get_json() == [{'name': hosts, 'profiles': [] }]
+        assert r.get_json() == [{'name': hosts, 'profiles': [], 'attributes': {}}]
 
         # Try to re-add the same hosts and get a conflict
         r = client.post('/api/v1.0/hosts',
@@ -77,12 +77,12 @@ def test_hosts(client):
     # List hosts
     r = client.get('/api/v1.0/hosts')
     assert r.status_code == 200
-    assert r.get_json() == [{ 'name': str(hosts_ns), 'profiles': [] }]
+    assert r.get_json() == [{ 'name': str(hosts_ns), 'profiles': [], 'attributes': {} }]
 
     # Get host
     r = client.get('/api/v1.0/hosts/node59')
     assert r.status_code == 200
-    assert r.get_json() == [{ 'name': 'node59', 'profiles': [] }]
+    assert r.get_json() == [{ 'name': 'node59', 'profiles': [], 'attributes': {} }]
 
 
     # Delete non existing host
@@ -211,7 +211,8 @@ def test_host_profiles(client):
     assert r.status_code == 200
     assert r.get_json() == [{
         'name': 'node[0-9]',
-        'profiles': ['profileA']}]
+        'profiles': ['profileA'],
+        'attributes': {'a': '1'}}]
 
     # Update profiles for non existing host
     r = client.patch('/api/v1.0/hosts/node20',
@@ -224,17 +225,20 @@ def test_host_profiles(client):
     assert r.status_code == 200
 
     assert r.get_json() == [{'name': 'node[0-4]',
-                             'profiles': ['profileB', 'profileA']}]
+                             'profiles': ['profileB', 'profileA'],
+                             'attributes': {'a': '1', 'b': '2'}}]
 
     # Check new profiles
     r = client.get('/api/v1.0/hosts')
     assert r.status_code == 200
     assert dict_sorted_list(r.get_json()) == dict_sorted_list([{
-            'name': 'node[0-4]',
-            'profiles': ['profileB', 'profileA']
+        'name': 'node[0-4]',
+        'profiles': ['profileB', 'profileA'],
+        'attributes': {'a': '1', 'b': '2'}
         },{
             'name': 'node[5-9]',
-            'profiles': ['profileA']
+            'profiles': ['profileA'],
+            'attributes': {'a': '1'}
         }])
 
     # Delete a profile
@@ -245,11 +249,13 @@ def test_host_profiles(client):
     r = client.get('/api/v1.0/hosts')
     assert r.status_code == 200
     assert dict_sorted_list(r.get_json()) == dict_sorted_list([{
-            'name': 'node[0-4]',
-            'profiles': ['profileB']
+        'name': 'node[0-4]',
+        'profiles': ['profileB'],
+        'attributes': {'b': '2'}
         },{
             'name': 'node[5-9]',
-            'profiles': []
+            'profiles': [],
+            'attributes': {}
         }])
 
 def test_resources(client):
