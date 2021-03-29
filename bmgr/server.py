@@ -82,7 +82,7 @@ class Host(db.Model):
   profiles = relationship("Profile", backref="host",
                        secondary=host_profiles_table, order_by=Profile.weight)
 
-  aliases = relationship("Alias", cascade="all, delete-orphan")
+  aliases = relationship("Alias", backref="host", cascade="all, delete-orphan")
 
   def __init__(self, hostname):
     self.hostname = hostname
@@ -150,7 +150,6 @@ class Alias(db.Model):
   autodelete = db.Column(db.Boolean)
 
   target = relationship("Resource", uselist=False)
-  host = relationship("Host", uselist=False)
 
   def __init__(self, name, target, host, autodelete=False):
     self.name = name
