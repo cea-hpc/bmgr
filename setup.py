@@ -48,7 +48,7 @@ class bmgr_install(install):
                                              ['confs/bmgr.wsgi']))
         install.finalize_options(self)
 
-setup(name= 'bmgr', version= '0.6.1', description= 'Simple iPXE boot manager',
+setup(name= 'bmgr', version= '0.7.0', description= 'Simple iPXE boot manager',
       long_description= 'Simple tool to manage PXE boot requests with a RESTful'
       ' interface',
       author= 'Francois Diakhate', author_email= 'francois.diakhate@cea.fr',
@@ -59,7 +59,7 @@ setup(name= 'bmgr', version= '0.6.1', description= 'Simple iPXE boot manager',
         [console_scripts]
         bmgr=bmgr.scripts.cmd:cli
       ''',
-      install_requires=['Flask', 'flask', 'Flask-SQLAlchemy', 'ClusterShell',
+      install_requires=['Flask', 'Flask-SQLAlchemy', 'ClusterShell',
                         'flask-expects-json', 'requests', 'click', 'mysqlclient',
                         'texttable', 'responses'],
       cmdclass={'bdist_rpm': bmgr_bdist_rpm,
