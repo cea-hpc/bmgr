@@ -221,8 +221,10 @@ def get_alias(alias_name, hostname=None, allow_fail=False):
 
 def render(tpl, context):
   path = parse_template_uri(tpl)
-  return jinja2.Environment(loader = jinja2.FileSystemLoader(
-      current_app.config['BMGR_TEMPLATE_PATH'])).get_template(path).render(
+  environment = jinja2.Environment(loader = jinja2.FileSystemLoader(
+      current_app.config['BMGR_TEMPLATE_PATH']))
+  environment.filters["from_json"] = json.loads
+  return environment.get_template(path).render(
     context)
 
 def delete_profile(name):
